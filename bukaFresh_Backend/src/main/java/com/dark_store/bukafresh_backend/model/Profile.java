@@ -27,6 +27,10 @@ public class Profile {
     @Size(min = 2, max = 50)
     private String lastName;
 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Enter a valid email")
+    private String email;
+
     private String phone;
     private String avatarId;
     private String subscriptionId;

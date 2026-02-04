@@ -15,4 +15,6 @@ public class Address {
     private String postalCode;
     private String instructions;
     private Boolean isDefault;
+
+
 }

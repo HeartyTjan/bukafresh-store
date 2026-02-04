@@ -12,6 +12,8 @@ public class Address {
     @Size(max = 100)
     private String street;
 
+    private String label;
+
     @NotBlank
     @Size(max = 50)
     private String city;
@@ -20,6 +22,9 @@ public class Address {
     @Size(max = 50)
     private String state;
 
+    private String postalCode;
+
+    private String instructions;
     @NotBlank
     @Size(min = 2, max = 2, message = "Country must be ISO-2 code (NG)")
     private String country;

@@ -12,7 +12,7 @@ public class Product {
     @Id
     private String id;
     private String name;
-    private String category; // STAPLE, VEGETABLE, FRUIT, PROTEIN, DAIRY, BEVERAGE
+    private String category;
     private boolean perishable;
     private double price;
     private LocalDateTime createdAt;

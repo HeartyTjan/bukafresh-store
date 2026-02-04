@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/shared/ui/buttons";
 import { Eye, EyeOff, Mail, Lock, ShoppingBag, Loader2 } from "lucide-react";
 import { useAuth } from "@/auth/api/AuthProvider";
@@ -7,8 +7,9 @@ import { showSuccessAlert, showErrorAlert } from "@/shared/customAlert";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,30 +19,32 @@ export default function Login() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email";
     }
-    
+
     if (!formData.password) {
       newErrors.password = "Password is required";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     try {
       const response = await login(formData);
       showSuccessAlert("Welcome back!", "You've been successfully logged in");
-      navigate("/dashboard");
+      // Redirect to the original destination (if present) or default to /dashboard
+      const returnTo = location.state?.from?.pathname || "/dashboard";
+      navigate(returnTo, { replace: true });
     } catch (error) {
       const errorMessage = error.message || "Login failed. Please try again.";
       showErrorAlert("Login Failed", errorMessage);
@@ -50,11 +53,11 @@ export default function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -87,7 +90,10 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-foreground mb-2"
+            >
               Email Address
             </label>
             <div className="relative">
@@ -99,8 +105,8 @@ export default function Login() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
-                  errors.email 
-                    ? "border-destructive focus:ring-destructive" 
+                  errors.email
+                    ? "border-destructive focus:ring-destructive"
                     : "border-border focus:border-primary"
                 }`}
                 placeholder="Enter your email"
@@ -114,7 +120,10 @@ export default function Login() {
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-foreground mb-2"
+            >
               Password
             </label>
             <div className="relative">
@@ -126,8 +135,8 @@ export default function Login() {
                 value={formData.password}
                 onChange={handleChange}
                 className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
-                  errors.password 
-                    ? "border-destructive focus:ring-destructive" 
+                  errors.password
+                    ? "border-destructive focus:ring-destructive"
                     : "border-border focus:border-primary"
                 }`}
                 placeholder="Enter your password"
@@ -139,7 +148,11 @@ export default function Login() {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 disabled={loading}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
             {errors.password && (
@@ -170,19 +183,16 @@ export default function Login() {
         <div className="mt-8 text-center space-y-4">
           <p className="text-muted-foreground">
             Don't have an account?{" "}
-            <Link 
-              to="/register" 
+            <Link
+              to="/register"
               className="text-primary hover:text-primary/80 font-medium"
             >
               Sign up
             </Link>
           </p>
-          
+
           <div className="text-sm text-muted-foreground">
-            <Link 
-              to="/" 
-              className="hover:text-foreground transition-colors"
-            >
+            <Link to="/" className="hover:text-foreground transition-colors">
               ← Back to homepage
             </Link>
           </div>

@@ -1,5 +1,6 @@
 package com.dark_store.bukafresh_backend.exception;
 
+import com.mongodb.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,6 +43,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyVerifiedException.class)
     public ResponseEntity<ErrorResponse> handleResourceAlreadyExist(UserAlreadyVerifiedException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ErrorResponse> handleResourceAlreadyExist(DuplicateKeyException ex) {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.CONFLICT.value())
                 .message(ex.getMessage())
@@ -105,16 +117,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-//    @ExceptionHandler(EmailNotVerifiedException.class)
-//    public ResponseEntity<ErrorResponse> handleEmailNotVerified(EmailNotVerifiedException ex) {
-//        ErrorResponse error = ErrorResponse.builder()
-//                .status(HttpStatus.FORBIDDEN.value())
-//                .message(ex.getMessage())
-//                .timestamp(LocalDateTime.now())
-//                .build();
-//
-//        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
-//    }
+
+    @ExceptionHandler(UnVerifiedEmailException.class)
+    public ResponseEntity<ErrorResponse> handleEmailNotVerified(UnVerifiedEmailException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
 
     // =========================
     // Validation Errors

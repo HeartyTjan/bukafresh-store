@@ -17,16 +17,13 @@ public class CreateSubscriptionRequest {
 
     @NotBlank(message = "Billing cycle is required")
     @Pattern(
-            regexp = "^(MONTHLY|YEARLY)$",
-            message = "Billing cycle must be MONTHLY or YEARLY"
+            regexp = "^(MONTHLY|WEEKLY)$",
+            message = "Billing cycle must be MONTHLY or WEEKLY"
     )
     private String billingCycle;
 
+    private Address address;
     // Optional: for future payment integration
-    private String paymentMethodId;
-
     private BigDecimal price;
-    
-    // Optional: for delivery preferences
-    private String deliveryDay;
+    private String deliveryDay = "SATURDAY";
 }

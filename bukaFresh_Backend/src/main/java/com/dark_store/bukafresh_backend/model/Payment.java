@@ -1,10 +1,12 @@
 package com.dark_store.bukafresh_backend.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -30,8 +32,11 @@ public class Payment {
     private String bankName;
     private String phoneNumber;
     private String firstName;
-    private String lastName;
-    
+
+    @Indexed(unique = true)
+    private String idempotencyKey;
+
+
     // Payment status and tracking
     private String status; // PENDING, PROCESSING, PAID, FAILED
     private String paymentReference;

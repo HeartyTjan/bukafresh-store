@@ -15,16 +15,27 @@ const createAuthenticatedRequest = () => {
 };
 
 export const paymentService = {
-  // Process payment for subscription (matches backend POST /api/payments/process)
-  processPayment: async (paymentData) => {
+  processPayment: async ({ data, config }) => {
+    console.log("Processing payment with data:", data, "and config:", config);
     try {
-      const api = createAuthenticatedRequest();
-      const response = await api.post("/payments/process", paymentData);
+      const api = createAuthenticatedRequest(); // your Axios instance
+
+      // Merge config with headers to ensure idempotency-key is included
+      const requestConfig = {
+        ...config,
+        headers: {
+          ...api.defaults.headers,
+          ...(config?.headers || {}),
+        },
+      };
+
+      const response = await api.post("/payments/process", data, requestConfig);
+      console.log("Process payment response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Process payment error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to process payment"
+        error.response?.data?.message || "Failed to process payment",
       );
     }
   },
@@ -38,7 +49,7 @@ export const paymentService = {
     } catch (error) {
       console.error("Get payment error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to fetch payment"
+        error.response?.data?.message || "Failed to fetch payment",
       );
     }
   },
@@ -52,7 +63,7 @@ export const paymentService = {
     } catch (error) {
       console.error("Get user payments error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to fetch user payments"
+        error.response?.data?.message || "Failed to fetch user payments",
       );
     }
   },
@@ -61,12 +72,15 @@ export const paymentService = {
   getSubscriptionPayments: async (subscriptionId) => {
     try {
       const api = createAuthenticatedRequest();
-      const response = await api.get(`/payments/subscription/${subscriptionId}`);
+      const response = await api.get(
+        `/payments/subscription/${subscriptionId}`,
+      );
       return response.data;
     } catch (error) {
       console.error("Get subscription payments error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to fetch subscription payments"
+        error.response?.data?.message ||
+          "Failed to fetch subscription payments",
       );
     }
   },

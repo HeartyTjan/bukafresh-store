@@ -7,8 +7,13 @@ import { useSubscriptionCreationContext } from "../context/SubscriptionCreationC
 import { cn } from "@/shared/utils/cn";
 import { showSuccessAlert, showErrorAlert } from "@/shared/customAlert";
 
-export const SubscriptionDeliverySetup = ({ onBack, onContinue, isCreating }) => {
-  const { deliveryAddress, setDeliveryAddress } = useSubscriptionCreationContext();
+export const SubscriptionDeliverySetup = ({
+  onBack,
+  onContinue,
+  isCreating,
+}) => {
+  const { deliveryAddress, setDeliveryAddress } =
+    useSubscriptionCreationContext();
 
   const [newAddress, setNewAddress] = useState({
     label: "",
@@ -19,6 +24,8 @@ export const SubscriptionDeliverySetup = ({ onBack, onContinue, isCreating }) =>
     instructions: "",
   });
 
+  console.log("Current delivery address:", deliveryAddress);
+
   // Auto-validate and set address when form changes
   const handleAddressChange = (field, value) => {
     const updatedAddress = { ...newAddress, [field]: value };
@@ -27,7 +34,6 @@ export const SubscriptionDeliverySetup = ({ onBack, onContinue, isCreating }) =>
     // Auto-set delivery address if required fields are filled
     if (updatedAddress.street?.trim() && updatedAddress.city?.trim()) {
       const address = {
-        id: `addr-${Date.now()}`,
         label: updatedAddress.label || "Delivery Address",
         street: updatedAddress.street,
         city: updatedAddress.city,
@@ -44,8 +50,14 @@ export const SubscriptionDeliverySetup = ({ onBack, onContinue, isCreating }) =>
   };
 
   const handleContinue = () => {
-    if (!deliveryAddress && (!newAddress.street?.trim() || !newAddress.city?.trim())) {
-      showErrorAlert("Address Required", "Please enter your street address and city");
+    if (
+      !deliveryAddress &&
+      (!newAddress.street?.trim() || !newAddress.city?.trim())
+    ) {
+      showErrorAlert(
+        "Address Required",
+        "Please enter your street address and city",
+      );
       return;
     }
     onContinue?.();
@@ -73,78 +85,82 @@ export const SubscriptionDeliverySetup = ({ onBack, onContinue, isCreating }) =>
 
         {/* New Address Form */}
         <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-            <h4 className="font-medium text-foreground">
-              Enter Delivery Address
-            </h4>
+          <h4 className="font-medium text-foreground">
+            Enter Delivery Address
+          </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="label">Address Label</Label>
-                <Input
-                  id="label"
-                  placeholder="e.g., Home, Office"
-                  value={newAddress.label}
-                  onChange={(e) => handleAddressChange('label', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="street">Street Address *</Label>
-                <Input
-                  id="street"
-                  placeholder="Enter your street address"
-                  value={newAddress.street}
-                  onChange={(e) => handleAddressChange('street', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
-                <Input
-                  id="city"
-                  placeholder="Lagos"
-                  value={newAddress.city}
-                  onChange={(e) => handleAddressChange('city', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal Code</Label>
-                <Input
-                  id="postalCode"
-                  placeholder="101233"
-                  value={newAddress.postalCode}
-                  onChange={(e) => handleAddressChange('postalCode', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="instructions">
-                  Delivery Instructions (Optional)
-                </Label>
-                <Input
-                  id="instructions"
-                  placeholder="e.g., Call when at the gate"
-                  value={newAddress.instructions}
-                  onChange={(e) => handleAddressChange('instructions', e.target.value)}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="label">Address Label</Label>
+              <Input
+                id="label"
+                placeholder="e.g., Home, Office"
+                value={newAddress.label}
+                onChange={(e) => handleAddressChange("label", e.target.value)}
+              />
             </div>
 
-            {/* Show address preview if valid */}
-            {deliveryAddress && (
-              <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="w-4 h-4 text-primary" />
-                  <span className="text-primary font-medium">Address Ready:</span>
-                  <span className="text-foreground">
-                    {deliveryAddress.street}, {deliveryAddress.city}
-                  </span>
-                </div>
-              </div>
-            )}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="street">Street Address *</Label>
+              <Input
+                id="street"
+                placeholder="Enter your street address"
+                value={newAddress.street}
+                onChange={(e) => handleAddressChange("street", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city">City *</Label>
+              <Input
+                id="city"
+                placeholder="Lagos"
+                value={newAddress.city}
+                onChange={(e) => handleAddressChange("city", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="postalCode">Postal Code</Label>
+              <Input
+                id="postalCode"
+                placeholder="101233"
+                value={newAddress.postalCode}
+                onChange={(e) =>
+                  handleAddressChange("postalCode", e.target.value)
+                }
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="instructions">
+                Delivery Instructions (Optional)
+              </Label>
+              <Input
+                id="instructions"
+                placeholder="e.g., Call when at the gate"
+                value={newAddress.instructions}
+                onChange={(e) =>
+                  handleAddressChange("instructions", e.target.value)
+                }
+              />
+            </div>
           </div>
+
+          {/* Show address preview if valid */}
+          {deliveryAddress && (
+            <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-center gap-2 text-sm">
+                <Check className="w-4 h-4 text-primary" />
+                <span className="text-primary font-medium">Address Ready:</span>
+                <span className="text-foreground">
+                  {deliveryAddress.street}, {deliveryAddress.city}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
 
       {/* Delivery Day Notice */}
       <div className="space-y-4">
@@ -185,7 +201,7 @@ export const SubscriptionDeliverySetup = ({ onBack, onContinue, isCreating }) =>
           onClick={handleContinue}
           disabled={!deliveryAddress || isCreating}
         >
-          {isCreating ? 'Creating Subscription...' : 'Create Subscription'}
+          {isCreating ? "Creating Subscription..." : "Create Subscription"}
         </Button>
       </div>
     </div>

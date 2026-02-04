@@ -7,9 +7,10 @@ import java.util.List;
 
 public interface ProfileService {
 
-    void createProfile(String firstName, String lastName, Address address, String userId);
 
-    void createProfile(String firstName, String lastName, String phone, String userId);
+    void createProfile(String firstName, String lastName, String email, String phone, Address address, String userId);
+
+    void createProfile(String firstName, String lastName, String email, String phone, String userId);
 
     Profile updateProfile(String profileId, Profile profile);
 

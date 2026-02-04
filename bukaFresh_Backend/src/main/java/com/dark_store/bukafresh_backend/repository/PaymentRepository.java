@@ -14,4 +14,6 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
     Optional<Payment> findByPaymentReference(String paymentReference);
     Optional<Payment> findByOnePipeReference(String onePipeReference);
     List<Payment> findByStatus(String status);
+
+    Optional<Payment> findByIdempotencyKey(String idempotencyKey);
 }

@@ -43,7 +43,8 @@ public class SecurityConfig {
                     "/api/users/register",
                     "/api/users/verify-email",
                     "/api/users/checkout-register",
-                    "/api/users/resend-verification-email"
+                    "/api/users/resend-verification-email",
+                        "/webhooks/onepipe/payment"
                 ).permitAll()
                 .anyRequest().authenticated()
                 )

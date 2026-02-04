@@ -16,9 +16,12 @@ public class SubscriptionResponse {
     private String billingCycle;
     private LocalDate nextBillingDate;
     private String mandateId;
+    private LocalDate nextDeliveryDate;
+    private Integer deliveryThisMonth;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private PlanDetails planDetails;
+
 
     @Data
     @Builder

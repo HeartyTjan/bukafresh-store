@@ -11,10 +11,9 @@ import org.springframework.context.annotation.Configuration;
 public class OnePipeProperties {
 
     private String baseUrl;
-    private String clientId;
     private String clientSecret;
-    private String encryptionKey;
+    private String apiKey;
     private String billerCode;
-    private String bearerToken;
+//    private String encryptionKey;
     private String mockMode;
 }

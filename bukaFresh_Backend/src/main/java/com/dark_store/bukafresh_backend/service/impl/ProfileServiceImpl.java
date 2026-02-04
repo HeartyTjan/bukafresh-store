@@ -17,11 +17,13 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
 
     @Override
-    public void createProfile(String firstName, String lastName, Address address, String userId) {
+    public void createProfile(String firstName, String lastName, String email, String phone, Address address, String userId) {
 
         Profile userProfile = Profile.builder()
                 .firstName(firstName)
                 .lastName(lastName)
+                .email(email)
+                .phone(phone)
                 .addresses(List.of(address))
                 .userId(userId)
                 .build();
@@ -30,11 +32,12 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void createProfile(String firstName, String lastName, String phone, String userId) {
+    public void createProfile(String firstName, String lastName, String email, String phone, String userId) {
 
         Profile userProfile = Profile.builder()
                 .firstName(firstName)
                 .lastName(lastName)
+                .email(email)
                 .userId(userId)
                 .phone(phone)
                 .build();

@@ -1,18 +1,22 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8084/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8084/api";
 
 console.log("Subscription service using API_BASE_URL:", API_BASE_URL);
 
 // Create axios instance with auth token
 const createAuthenticatedRequest = () => {
   const token = localStorage.getItem("authToken");
-  console.log("Creating authenticated request with token:", token ? "Token exists" : "No token");
-  
+  console.log(
+    "Creating authenticated request with token:",
+    token ? "Token exists" : "No token",
+  );
+
   if (!token) {
     throw new Error("No authentication token found. Please log in.");
   }
-  
+
   return axios.create({
     baseURL: API_BASE_URL,
     headers: {
@@ -40,7 +44,10 @@ export const subscriptionService = {
   testConnection: async () => {
     try {
       const api = createAuthenticatedRequest();
-      console.log("Testing connection to:", `${API_BASE_URL}/subscriptions/test`);
+      console.log(
+        "Testing connection to:",
+        `${API_BASE_URL}/subscriptions/test`,
+      );
       const response = await api.get("/subscriptions/test");
       console.log("Test connection response:", response.data);
       return response.data;
@@ -50,10 +57,11 @@ export const subscriptionService = {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
       });
       throw new Error(
-        error.response?.data?.message || "Failed to connect to subscription service"
+        error.response?.data?.message ||
+          "Failed to connect to subscription service",
       );
     }
   },
@@ -65,14 +73,14 @@ export const subscriptionService = {
       const testData = {
         tier: "STANDARD",
         billingCycle: "MONTHLY",
-        deliveryDay: "SATURDAY"
+        deliveryDay: "SATURDAY",
       };
       const response = await api.post("/subscriptions", testData);
       return response.data;
     } catch (error) {
       console.error("Test create subscription error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to create test subscription"
+        error.response?.data?.message || "Failed to create test subscription",
       );
     }
   },
@@ -81,7 +89,10 @@ export const subscriptionService = {
   getCurrentSubscription: async () => {
     try {
       const api = createAuthenticatedRequest();
-      console.log("Making subscription API call to:", `${API_BASE_URL}/subscriptions/me`);
+      console.log(
+        "Making subscription API call to:",
+        `${API_BASE_URL}/subscriptions/me`,
+      );
       const response = await api.get("/subscriptions/me");
       console.log("Subscription API response:", response.data);
       return response.data;
@@ -91,16 +102,16 @@ export const subscriptionService = {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
       });
-      
+
       // Handle 404 errors gracefully (user has no subscription)
       if (error.response?.status === 404) {
         throw new Error("No subscription found");
       }
-      
+
       throw new Error(
-        error.response?.data?.message || "Failed to fetch subscription"
+        error.response?.data?.message || "Failed to fetch subscription",
       );
     }
   },
@@ -114,7 +125,7 @@ export const subscriptionService = {
     } catch (error) {
       console.error("Get all subscriptions error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to fetch subscriptions"
+        error.response?.data?.message || "Failed to fetch subscriptions",
       );
     }
   },
@@ -128,49 +139,54 @@ export const subscriptionService = {
     } catch (error) {
       console.error("Create subscription error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to create subscription"
+        error.response?.data?.message || "Failed to create subscription",
       );
     }
   },
 
   // Pause subscription
-  pauseSubscription: async (subscriptionId) => {
-    try {
-      const api = createAuthenticatedRequest();
-      const response = await api.put(`/subscriptions/${subscriptionId}/pause`);
-      return response.data;
-    } catch (error) {
-      console.error("Pause subscription error:", error);
-      throw new Error(
-        error.response?.data?.message || "Failed to pause subscription"
-      );
-    }
-  },
+  // pauseSubscription: async (subscriptionId) => {
+  //   try {
+  //     const api = createAuthenticatedRequest();
+  //     const response = await api.put(`/subscriptions/${subscriptionId}/pause`);
+  //     console.log("Pause subscription response:", response.data);
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error("Pause subscription error:", error);
+  //     throw new Error(
+  //       error.response?.data?.message || "Failed to pause subscription"
+  //     );
+  //   }
+  // },
 
   // Resume subscription
-  resumeSubscription: async (subscriptionId) => {
-    try {
-      const api = createAuthenticatedRequest();
-      const response = await api.put(`/subscriptions/${subscriptionId}/resume`);
-      return response.data;
-    } catch (error) {
-      console.error("Resume subscription error:", error);
-      throw new Error(
-        error.response?.data?.message || "Failed to resume subscription"
-      );
-    }
-  },
+  // resumeSubscription: async (subscriptionId) => {
+  //   try {
+  //     const api = createAuthenticatedRequest();
+  //     const response = await api.put(`/subscriptions/${subscriptionId}/resume`);
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error("Resume subscription error:", error);
+  //     throw new Error(
+  //       error.response?.data?.message || "Failed to resume subscription"
+  //     );
+  //   }
+  // },
 
-  // Cancel subscription
-  cancelSubscription: async (subscriptionId) => {
+  // Cancel subscription with optional reason
+  cancelSubscription: async (subscriptionId, reason = null) => {
     try {
       const api = createAuthenticatedRequest();
-      const response = await api.put(`/subscriptions/${subscriptionId}/cancel`);
+      const payload = reason ? { reason } : {};
+      const response = await api.put(
+        `/subscriptions/${subscriptionId}/cancel`,
+        payload,
+      );
       return response.data;
     } catch (error) {
       console.error("Cancel subscription error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to cancel subscription"
+        error.response?.data?.message || "Failed to cancel subscription",
       );
     }
   },
@@ -179,12 +195,14 @@ export const subscriptionService = {
   activateSubscription: async (subscriptionId) => {
     try {
       const api = createAuthenticatedRequest();
-      const response = await api.put(`/subscriptions/${subscriptionId}/activate`);
+      const response = await api.put(
+        `/subscriptions/${subscriptionId}/activate`,
+      );
       return response.data;
     } catch (error) {
       console.error("Activate subscription error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to activate subscription"
+        error.response?.data?.message || "Failed to activate subscription",
       );
     }
   },
@@ -194,13 +212,13 @@ export const subscriptionService = {
     try {
       const api = createAuthenticatedRequest();
       const response = await api.put(
-        `/subscriptions/${subscriptionId}/status?status=${status}`
+        `/subscriptions/${subscriptionId}/status?status=${status}`,
       );
       return response.data;
     } catch (error) {
       console.error("Update subscription status error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to update subscription status"
+        error.response?.data?.message || "Failed to update subscription status",
       );
     }
   },
@@ -214,7 +232,7 @@ export const subscriptionService = {
     } catch (error) {
       console.error("Delete subscription error:", error);
       throw new Error(
-        error.response?.data?.message || "Failed to delete subscription"
+        error.response?.data?.message || "Failed to delete subscription",
       );
     }
   },
