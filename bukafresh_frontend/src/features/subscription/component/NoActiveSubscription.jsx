@@ -1,75 +1,96 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ShoppingBag } from "lucide-react";
 import {
-  ShoppingBag,
-} from 'lucide-react';
-import { SubscriptionCreationProvider, useSubscriptionCreationContext } from '../context/SubscriptionCreationContext';
-import { SubscriptionPackageSelection } from './SubscriptionPackageSelection';
-import { SubscriptionDeliverySetup } from './SubscriptionDeliverySetup';
-import { showSuccessAlert, showErrorAlert } from '@/shared/customAlert';
+  SubscriptionCreationProvider,
+  useSubscriptionCreationContext,
+} from "../context/SubscriptionCreationContext";
+import { SubscriptionPackageSelection } from "./SubscriptionPackageSelection";
+import { SubscriptionDeliverySetup } from "./SubscriptionDeliverySetup";
+import { showSuccessAlert, showErrorAlert } from "@/shared/customAlert";
 
 function NoActiveSubscriptionContent({ createSubscription, isCreating }) {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState('package');
-  const { selectedPackage, deliveryFrequency, deliveryAddress } = useSubscriptionCreationContext();
+  const [currentStep, setCurrentStep] = useState("package");
+  const { selectedPackage, deliveryFrequency, deliveryAddress } =
+    useSubscriptionCreationContext();
 
   const handleContinueToAddress = () => {
-    setCurrentStep('address');
+    setCurrentStep("address");
   };
 
   const handleBack = () => {
-    setCurrentStep('package');
+    setCurrentStep("package");
   };
 
   const handleCreateSubscription = async () => {
     if (!selectedPackage || !deliveryAddress) {
-      showErrorAlert('Missing Information', 'Please select a package and delivery address.');
+      showErrorAlert(
+        "Missing Information",
+        "Please select a package and delivery address.",
+      );
       return;
     }
-
     try {
-      // Map package ID to tier
       const tierMap = {
-        'pkg-essentials': 'ESSENTIALS',
-        'pkg-standard': 'STANDARD', 
-        'pkg-premium': 'PREMIUM'
+        "pkg-essentials": "ESSENTIALS",
+        "pkg-standard": "STANDARD",
+        "pkg-premium": "PREMIUM",
       };
 
+      console.log("selected Package id", selectedPackage.id);
+
       const subscriptionRequest = {
-        tier: tierMap[selectedPackage.id] || 'STANDARD',
-        billingCycle: deliveryFrequency === 'weekly' ? 'WEEKLY' : 'MONTHLY',
-        deliveryDay: 'SATURDAY'
+        tier: tierMap[selectedPackage.id],
+        billingCycle: deliveryFrequency === "weekly" ? "WEEKLY" : "MONTHLY",
+        address: {
+          label: deliveryAddress.label,
+          street: deliveryAddress.street,
+          city: deliveryAddress.city,
+          state: deliveryAddress.state,
+          postalCode: deliveryAddress.postalCode,
+          instructions: deliveryAddress.instructions || "",
+        },
+        deliveryDay: "SATURDAY",
       };
 
       const response = await createSubscription(subscriptionRequest);
-      
-      showSuccessAlert('Subscription Created!', 'Your subscription has been created. Complete payment to activate it.');
-      
+
+      showSuccessAlert(
+        "Subscription Created!",
+        "Your subscription has been created. Complete payment to activate it.",
+      );
+
       // Navigate to payment page with subscription data
       // Backend returns ApiResponse<SubscriptionResponse>, so data is nested under response.data
       const subscriptionId = response?.data?.id;
       const responseData = response?.data;
-      
+
       if (subscriptionId) {
-        navigate('/dashboard/payment', {
+        navigate("/dashboard/payment", {
           state: {
             subscriptionId,
             subscriptionData: responseData,
-            fromSubscriptionCreation: true
-          }
+            fromSubscriptionCreation: true,
+          },
         });
       } else {
-        console.error('No subscription ID found in response:', response);
-        showErrorAlert('Navigation Error', 'Subscription created but unable to navigate to payment. Please go to payment manually.');
+        console.error("No subscription ID found in response:", response);
+        showErrorAlert(
+          "Navigation Error",
+          "Subscription created but unable to navigate to payment. Please go to payment manually.",
+        );
       }
-      
     } catch (error) {
-      console.error('Subscription creation error:', error);
-      showErrorAlert('Creation Failed', 'Failed to create subscription. Please try again.');
+      console.error("Subscription creation error:", error);
+      showErrorAlert(
+        "Creation Failed",
+        "Failed to create subscription. Please try again.",
+      );
     }
   };
 
-  if (currentStep === 'package') {
+  if (currentStep === "package") {
     return (
       <div className="space-y-8">
         <div className="text-center py-8">
@@ -91,7 +112,7 @@ function NoActiveSubscriptionContent({ createSubscription, isCreating }) {
   }
 
   return (
-    <SubscriptionDeliverySetup 
+    <SubscriptionDeliverySetup
       onBack={handleBack}
       onContinue={handleCreateSubscription}
       isCreating={isCreating}
@@ -102,7 +123,7 @@ function NoActiveSubscriptionContent({ createSubscription, isCreating }) {
 export function NoActiveSubscription({ createSubscription, isCreating }) {
   return (
     <SubscriptionCreationProvider>
-      <NoActiveSubscriptionContent 
+      <NoActiveSubscriptionContent
         createSubscription={createSubscription}
         isCreating={isCreating}
       />

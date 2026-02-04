@@ -27,6 +27,8 @@ const Overview = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  console.log("subscription in overview", subscription);
+
   const stats = [
     {
       label: "Amount spent",
@@ -47,6 +49,13 @@ const Overview = () => {
       color: "text-primary",
     },
   ];
+
+  const getDaysUntilDelivery = (date) => {
+    const today = new Date();
+    const deliveryDate = new Date(date);
+    const diffTime = deliveryDate.getTime() - today.getTime();
+    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  };
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -90,164 +99,98 @@ const Overview = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        {/* Current Subscription */}
-        <div className="bg-card rounded-xl sm:rounded-2xl border border-border/50 overflow-hidden">
-          {subscriptionLoading ? (
-            <div className="p-6 animate-pulse">
-              <div className="h-6 bg-muted rounded w-1/2 mb-4"></div>
-              <div className="h-4 bg-muted rounded w-3/4"></div>
+      {/* Next Delivery */}
+      <div className="bg-card rounded-xl sm:rounded-2xl border border-border/50 overflow-hidden">
+        {subscriptionLoading ? (
+          <div className="p-6 animate-pulse">
+            <div className="h-6 bg-muted rounded w-1/2 mb-4"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+          </div>
+        ) : subscription && subscription.status === "ACTIVE" ? (
+          <>
+            <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white/80 text-xs sm:text-sm font-medium">
+                    Next Delivery
+                  </p>
+                  <h2 className="text-lg sm:text-2xl font-display font-bold text-white mt-1">
+                    {new Date(subscription.nextDeliveryDate).toLocaleDateString(
+                      "en-US",
+                      {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )}
+                  </h2>
+                </div>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center">
+                  <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                </div>
+              </div>
             </div>
-          ) : subscription ? (
-            <>
-              <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/80 text-xs sm:text-sm font-medium">
-                      Current Plan
-                    </p>
-                    <h2 className="text-lg sm:text-2xl font-display font-bold text-white mt-1">
-                      {subscription.planDetails?.name || "Standard Package"}
-                    </h2>
-                  </div>
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center">
-                    <Package className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                  </div>
+
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Arriving in
+                  </p>
+                  <p className="font-semibold text-foreground text-sm sm:text-base">
+                    {getDaysUntilDelivery(subscription.nextDeliveryDate)} days
+                  </p>
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-                <div className="flex items-center justify-between py-2 sm:py-3 border-b border-border">
-                  <span className="text-muted-foreground text-sm sm:text-base">
-                    Monthly Subscription
-                  </span>
-                  <span className="font-medium text-foreground text-sm sm:text-base">
-                    {subscription.planDetails?.price || "₦140,000/month"}
-                  </span>
-                </div>
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  Items in this delivery:
+                </p>
 
-                <div className="flex items-center justify-between py-2 sm:py-3 border-b border-border">
-                  <span className="text-muted-foreground text-sm sm:text-base">
-                    Delivery Day
-                  </span>
-                  <span className="font-medium text-foreground text-sm sm:text-base">
-                    {subscription.planDetails?.deliveryDay || "Saturday"}
-                  </span>
+                <div className="text-center text-sm text-muted-foreground">
+                  Your delivery includes fresh groceries tailored to your plan.
                 </div>
-
-                <div className="flex items-center justify-between py-2 sm:py-3">
-                  <span className="text-muted-foreground text-sm sm:text-base">
-                    Status
-                  </span>
-                  <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-                    subscription.status === "ACTIVE" ? "bg-green-100 text-green-700" :
-                    subscription.status === "PAUSED" ? "bg-yellow-100 text-yellow-700" :
-                    subscription.status === "CANCELED" ? "bg-red-100 text-red-700" :
-                    "bg-gray-100 text-gray-700"
-                  }`}>
-                    {subscription.status || "Active"}
-                  </span>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full mt-3 sm:mt-4 text-sm sm:text-base"
-                  onClick={() => navigate("/dashboard/subscription")}
-                >
-                  Manage Subscription
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
               </div>
-            </>
-          ) : (
-            // No subscription state
-            <div className="p-4 sm:p-6 text-center">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
-                <Package className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                No Active Subscription
-              </h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Start your fresh grocery journey today
-              </p>
+
               <Button
-                onClick={() => navigate("/dashboard/subscription")}
-                className="w-full"
+                variant="outline"
+                className="w-full mt-4 sm:mt-6 text-sm sm:text-base"
+                onClick={() => navigate("/dashboard/deliveries")}
               >
-                Choose a Plan
+                View All Deliveries
+                <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
-          )}
-        </div>
-
-        {/* Next Delivery */}
-        <div className="bg-card rounded-xl sm:rounded-2xl border border-border/50 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/80 text-xs sm:text-sm font-medium">
-                  Next Delivery
-                </p>
-                <h2 className="text-lg sm:text-2xl font-display font-bold text-white mt-1">
-                  Saturday, Jan 31
-                </h2>
-              </div>
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center">
-                <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-              </div>
+          </>
+        ) : (
+          // No subscription or pending
+          <div className="p-4 sm:p-6 text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
+              <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
             </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No Upcoming Deliveries
+            </h3>
+            <p className="text-muted-foreground text-sm mb-4">
+              {subscription?.status === "PENDING"
+                ? "Your subscription is pending. Delivery will start once your plan is active."
+                : "Choose a subscription plan to start receiving deliveries"}
+            </p>
+            {subscription?.status == "PENDING" ||
+              (!subscription && (
+                <Button
+                  onClick={() => navigate("/dashboard/subscription")}
+                  className="w-50"
+                >
+                  Choose a Plan
+                </Button>
+              ))}
           </div>
-
-          <div className="p-4 sm:p-6">
-            <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Arriving in
-                </p>
-                <p className="font-semibold text-foreground text-sm sm:text-base">
-                  3 days
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">
-                Items in this delivery:
-              </p>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">
-                    Fresh Chicken Breast
-                  </span>
-                  <span className="text-foreground">2 kg</span>
-                </div>
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">Fresh Tomatoes</span>
-                  <span className="text-foreground">3 kg</span>
-                </div>
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">Ugwu Leaves</span>
-                  <span className="text-foreground">4 bunch</span>
-                </div>
-                <p className="text-xs sm:text-sm text-primary">+1 more items</p>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full mt-4 sm:mt-6 text-sm sm:text-base"
-              onClick={() => navigate("/dashboard/deliveries")}
-            >
-              View All Deliveries
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Quick Actions */}

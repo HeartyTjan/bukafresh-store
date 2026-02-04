@@ -4,6 +4,8 @@ import ProtectedRoute from "@/auth/component/ProtectedRoute";
 import Overview from "./component/Overview";
 import DashboardPayment from "@/features/payment/component/DashboardPayment";
 import DashboardSubscription from "../subscription/DashboardSubscription";
+import MandateInfoWrapper from "../payment/component/MandateInfoWrapper";
+import DashboardDelivery from "@features/delivery/DashboardDelivery";
 
 export default function DashboardRoutes() {
   return (
@@ -11,14 +13,12 @@ export default function DashboardRoutes() {
       <DashboardLayout>
         <Routes>
           <Route index element={<Overview />} />
-          <Route
-            path="subscription"
-            element={<DashboardSubscription />}
-          />
-          <Route path="deliveries" element={<div>Deliveries</div>} />
+          <Route path="subscription" element={<DashboardSubscription />} />
+          <Route path="deliveries" element={<DashboardDelivery />} />
           <Route path="orders" element={<div>Order History</div>} />
           <Route path="shop" element={<div>Shop Add-ons</div>} />
           <Route path="payment" element={<DashboardPayment />} />
+          <Route path="payment-success" element={<MandateInfoWrapper />} />
           <Route path="settings" element={<div>Settings</div>} />
         </Routes>
       </DashboardLayout>

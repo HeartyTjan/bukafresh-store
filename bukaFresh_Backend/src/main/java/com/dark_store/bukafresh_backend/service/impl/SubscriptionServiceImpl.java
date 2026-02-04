@@ -4,18 +4,22 @@ import com.dark_store.bukafresh_backend.dto.request.CreateSubscriptionRequest;
 import com.dark_store.bukafresh_backend.dto.response.SubscriptionResponse;
 import com.dark_store.bukafresh_backend.exception.BusinessException;
 import com.dark_store.bukafresh_backend.exception.ResourceNotFoundException;
+import com.dark_store.bukafresh_backend.model.Address;
 import com.dark_store.bukafresh_backend.model.Subscription;
+import com.dark_store.bukafresh_backend.repository.AddressRepository;
 import com.dark_store.bukafresh_backend.repository.SubscriptionRepository;
 import com.dark_store.bukafresh_backend.service.SubscriptionService;
-import com.dark_store.bukafresh_backend.service.clients.OnePipeMandateClient;
 import com.dark_store.bukafresh_backend.util.CurrentUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -24,7 +28,7 @@ import java.util.stream.Collectors;
 public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final OnePipeMandateClient onePipeMandateClient;
+    private final AddressRepository addressRepository;
 
     @Override
     public SubscriptionResponse createSubscription(CreateSubscriptionRequest request) {
@@ -42,11 +46,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
 
         try {
-            // Create subscription with PENDING status (requires payment to activate)
             Subscription subscription = new Subscription();
             subscription.setUserId(userId);
             subscription.setTier(request.getTier());
-            subscription.setStatus("PENDING"); // Changed from ACTIVE to PENDING
+            subscription.setStatus("PENDING");
             subscription.setPrice(request.getPrice());
             subscription.setBillingCycle(request.getBillingCycle());
             subscription.setNextBillingDate(calculateNextBillingDate(request.getBillingCycle()));
@@ -54,7 +57,21 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             subscription.setUpdatedAt(LocalDateTime.now());
 
             Subscription savedSubscription = subscriptionRepository.save(subscription);
-            
+
+            Address address = Address.builder()
+                    .street(request.getAddress().getStreet())
+                    .city(request.getAddress().getCity())
+                    .state(request.getAddress().getState())
+                    .userId(userId)
+                    .postalCode(request.getAddress().getPostalCode())
+                    .instructions(request.getAddress().getInstructions())
+                    .type(request.getAddress().getLabel())
+                    .isDefault(true)
+                    .build();
+
+            addressRepository.save(address);
+
+
             log.info("Created PENDING subscription {} for user {} with tier {} - requires payment to activate", 
                     savedSubscription.getId(), userId, request.getTier());
             
@@ -77,17 +94,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public SubscriptionResponse getUserSubscription(String userId) {
-        List<Subscription> subscriptions = subscriptionRepository.findByUserId(userId);
-        System.out.println("Subscription" + subscriptions);
-
-        System.out.println("user id for sub" + userId);
-        Subscription activeSubscription = subscriptions.stream()
-                .filter(sub -> "ACTIVE".equals(sub.getStatus().toUpperCase()))
+        Subscription subscription = subscriptionRepository.findByUserId(userId)
+                .stream()
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("No active subscription found for user"));
-        
-        return mapToResponse(activeSubscription);
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No subscription found for user")
+                );
+
+        return mapToResponse(subscription);
     }
+
 
     @Override
     public SubscriptionResponse updateSubscriptionStatus(String subscriptionId, String status) {
@@ -182,6 +198,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .mandateId(subscription.getMandateId())
                 .createdAt(subscription.getCreatedAt())
                 .updatedAt(subscription.getUpdatedAt())
+                .nextDeliveryDate(subscription.getNextDeliveryDate())
+                .deliveryThisMonth(subscription.getDeliveriesThisMonth())
                 .planDetails(getPlanDetails(subscription.getTier()))
                 .build();
     }
@@ -242,4 +260,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Deleting subscription {} for user {}", subscriptionId, currentUserId);
         subscriptionRepository.delete(subscription);
     }
+
+
+
 }

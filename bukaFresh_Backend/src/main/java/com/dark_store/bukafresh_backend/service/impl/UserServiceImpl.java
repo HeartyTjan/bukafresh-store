@@ -62,7 +62,8 @@ public class UserServiceImpl implements UserService {
 
         profileService.createProfile(
                 request.firstName(), 
-                request.lastName(), 
+                request.lastName(),
+                request.email(),
                 request.phone(),
                 savedUser.getId()
         );
@@ -133,7 +134,7 @@ public class UserServiceImpl implements UserService {
                 User.builder()
                         .email(request.email())
                         .password(passwordEncoder.encode(request.password()))
-                        .emailVerified(false) // 👈 critical
+                        .emailVerified(false)
                         .emailVerificationToken(passwordEncoder.encode(plainToken))
                         .emailVerificationTokenExpiry(LocalDateTime.now().plusMinutes(30))
                         .role(Role.USER)
@@ -157,6 +158,8 @@ public class UserServiceImpl implements UserService {
         profileService.createProfile(
                 request.firstName(),
                 request.lastName(),
+                request.email(),
+                request.phone(),
                 address,
                 savedUser.getId()
         );

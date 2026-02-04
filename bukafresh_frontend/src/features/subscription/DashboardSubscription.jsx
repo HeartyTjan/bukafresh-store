@@ -17,12 +17,15 @@ import { NoActiveSubscription } from "./component/NoActiveSubscription";
 import { InactiveSubscription } from "./component/InactiveSubscription";
 import { PlanChangeDialog } from "./component/PlanChangeDialog";
 import { cn } from "@/shared/utils/cn";
+import { showSuccessAlert } from "@/shared/customAlert";
+import CancelSubscriptionModal from "./components/CancelSubscriptionModal";
 
 const DashboardSubscription = () => {
   const navigate = useNavigate();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [selectedNewPlan, setSelectedNewPlan] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const {
     subscription,
@@ -30,10 +33,7 @@ const DashboardSubscription = () => {
     isLoading,
     error,
     isError,
-    pauseSubscription,
-    resumeSubscription,
-    isPausing,
-    isResuming,
+
     createSubscription,
     isCreating,
     deleteSubscription,
@@ -41,19 +41,25 @@ const DashboardSubscription = () => {
   } = useSubscription();
 
   // Check if user has any subscription (active, pending, or inactive)
-  const hasAnySubscription = subscription || (allSubscriptions && allSubscriptions.length > 0);
-  
+  const hasAnySubscription =
+    subscription || (allSubscriptions && allSubscriptions.length > 0);
+
   // Get the first subscription if no active subscription but has others
-  const currentSubscription = subscription || (allSubscriptions && allSubscriptions.length > 0 ? allSubscriptions[0] : null);
-  
+  const currentSubscription =
+    subscription ||
+    (allSubscriptions && allSubscriptions.length > 0
+      ? allSubscriptions[0]
+      : null);
+
   // Determine if we should show no subscription UI
   // Only show NoActiveSubscription if user has NO subscriptions at all
-  const showNoSubscription = !hasAnySubscription && 
-    (isError && error && (
-      error.message?.includes("not found") || 
-      error.message?.includes("No subscription found") || 
-      error.message?.includes("404")
-    ));
+  const showNoSubscription =
+    !hasAnySubscription &&
+    isError &&
+    error &&
+    (error.message?.includes("not found") ||
+      error.message?.includes("No subscription found") ||
+      error.message?.includes("404"));
 
   // If not authenticated, show message
   if (!localStorage.getItem("authToken")) {
@@ -72,9 +78,7 @@ const DashboardSubscription = () => {
           <p className="text-muted-foreground mb-4">
             Please log in to view your subscription details.
           </p>
-          <Button onClick={() => navigate("/login")}>
-            Go to Login
-          </Button>
+          <Button onClick={() => navigate("/login")}>Go to Login</Button>
         </div>
       </div>
     );
@@ -104,10 +108,13 @@ const DashboardSubscription = () => {
   }
 
   // Show error only for unexpected errors (not 404/not found)
-  if (isError && error && 
-      !error.message?.includes("not found") && 
-      !error.message?.includes("No subscription found") && 
-      !error.message?.includes("404")) {
+  if (
+    isError &&
+    error &&
+    !error.message?.includes("not found") &&
+    !error.message?.includes("No subscription found") &&
+    !error.message?.includes("404")
+  ) {
     return (
       <div className="space-y-8">
         <div>
@@ -123,9 +130,7 @@ const DashboardSubscription = () => {
           <p className="text-muted-foreground mb-4">
             {error.message || "Failed to load subscription details"}
           </p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     );
@@ -144,7 +149,7 @@ const DashboardSubscription = () => {
           </p>
         </div>
 
-        <NoActiveSubscription 
+        <NoActiveSubscription
           createSubscription={createSubscription}
           isCreating={isCreating}
         />
@@ -153,7 +158,11 @@ const DashboardSubscription = () => {
   }
 
   // Show InactiveSubscription component when user has inactive/pending subscription
-  if (currentSubscription && (currentSubscription.status === "PENDING" || currentSubscription.status === "INACTIVE")) {
+  if (
+    currentSubscription &&
+    (currentSubscription.status === "PENDING" ||
+      currentSubscription.status === "INACTIVE")
+  ) {
     return (
       <div className="space-y-8">
         <div>
@@ -165,7 +174,7 @@ const DashboardSubscription = () => {
           </p>
         </div>
 
-        <InactiveSubscription 
+        <InactiveSubscription
           subscription={currentSubscription}
           onDelete={deleteSubscription}
           isDeleting={isDeleting}
@@ -220,14 +229,6 @@ const DashboardSubscription = () => {
       minimumFractionDigits: 0,
     }).format(price);
 
-  const handlePauseToggle = () => {
-    if (currentSubscription?.status === "PAUSED") {
-      resumeSubscription(currentSubscription.id);
-    } else {
-      pauseSubscription(currentSubscription.id);
-    }
-  };
-
   const handlePlanSelect = (pkg) => {
     if (pkg.id === currentSubscription?.tier?.toUpperCase()) return;
     setSelectedNewPlan(pkg);
@@ -242,11 +243,13 @@ const DashboardSubscription = () => {
 
   // Get current subscription data
   const isPaused = currentSubscription?.status === "PAUSED";
-  const isActive = currentSubscription?.status === "ACTIVE" || currentSubscription?.status === "active";
+  const isActive =
+    currentSubscription?.status === "ACTIVE" ||
+    currentSubscription?.status === "active";
   const currentPrice = currentSubscription?.planDetails?.price || "₦140,000";
-  const nextDeliveryDate = currentSubscription?.nextDeliveryDate ? 
-    new Date(currentSubscription.nextDeliveryDate) : 
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const nextDeliveryDate = currentSubscription?.nextDeliveryDate
+    ? new Date(currentSubscription.nextDeliveryDate)
+    : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   // Render active subscription UI
   return (
@@ -268,8 +271,8 @@ const DashboardSubscription = () => {
           <div>
             <p className="font-medium text-amber-800">Subscription Paused</p>
             <p className="text-sm text-amber-700">
-              Your subscription is currently paused. No deliveries will be
-              made until you resume.
+              Your subscription is currently paused. No deliveries will be made
+              until you resume.
             </p>
           </div>
         </div>
@@ -284,7 +287,9 @@ const DashboardSubscription = () => {
                 Current Plan
               </p>
               <h2 className="text-2xl font-display font-bold text-primary-foreground mt-1">
-                {currentSubscription?.planDetails?.name || currentSubscription?.tier} Package
+                {currentSubscription?.planDetails?.name ||
+                  currentSubscription?.tier}{" "}
+                Package
               </h2>
             </div>
             <div
@@ -293,8 +298,8 @@ const DashboardSubscription = () => {
                 isPaused
                   ? "bg-amber-500 text-white"
                   : isActive
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-500 text-white",
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-500 text-white",
               )}
             >
               {currentSubscription?.status?.toUpperCase() || "Unknown"}
@@ -312,7 +317,9 @@ const DashboardSubscription = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Plan</p>
                 <p className="font-medium text-foreground">
-                  {currentSubscription?.tier?.charAt(0).toUpperCase() + currentSubscription?.tier?.slice(1).toLowerCase() || "Standard"}
+                  {currentSubscription?.tier?.charAt(0).toUpperCase() +
+                    currentSubscription?.tier?.slice(1).toLowerCase() ||
+                    "Standard"}
                 </p>
               </div>
             </div>
@@ -324,7 +331,8 @@ const DashboardSubscription = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Billing</p>
                 <p className="font-medium text-foreground capitalize">
-                  {currentSubscription?.billingCycle?.toLowerCase() || "Monthly"}
+                  {currentSubscription?.billingCycle?.toLowerCase() ||
+                    "Monthly"}
                 </p>
               </div>
             </div>
@@ -335,9 +343,7 @@ const DashboardSubscription = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Price</p>
-                <p className="font-medium text-foreground">
-                  {currentPrice}
-                </p>
+                <p className="font-medium text-foreground">{currentPrice}</p>
               </div>
             </div>
           </div>
@@ -348,13 +354,15 @@ const DashboardSubscription = () => {
               What's Included:
             </p>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {(currentSubscription?.planDetails?.features || [
-                "Fresh vegetables and fruits",
-                "Premium quality ingredients", 
-                "Weekly delivery",
-                "Flexible scheduling",
-                "Customer support"
-              ]).map((feature, index) => (
+              {(
+                currentSubscription?.planDetails?.features || [
+                  "Fresh vegetables and fruits",
+                  "Premium quality ingredients",
+                  "Weekly delivery",
+                  "Flexible scheduling",
+                  "Customer support",
+                ]
+              ).map((feature, index) => (
                 <li
                   key={index}
                   className="flex items-center gap-2 text-sm text-muted-foreground"
@@ -368,25 +376,6 @@ const DashboardSubscription = () => {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
-            <Button
-              variant={isPaused ? "default" : "outline"}
-              onClick={handlePauseToggle}
-              disabled={isPausing || isResuming}
-            >
-              {isPausing || isResuming ? (
-                "Processing..."
-              ) : isPaused ? (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Resume Subscription
-                </>
-              ) : (
-                <>
-                  <Pause className="w-4 h-4 mr-2" />
-                  Pause Subscription
-                </>
-              )}
-            </Button>
             <Button
               variant="outline"
               onClick={() => setShowUpgrade(!showUpgrade)}
@@ -406,7 +395,8 @@ const DashboardSubscription = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {mockPackages.map((pkg) => {
-              const isCurrent = pkg.id === currentSubscription?.tier?.toUpperCase();
+              const isCurrent =
+                pkg.id === currentSubscription?.tier?.toUpperCase();
               const price = pkg.monthlyDeliveryPrice;
 
               return (
@@ -496,7 +486,8 @@ const DashboardSubscription = () => {
           </div>
           <div>
             <p className="font-medium text-foreground capitalize">
-              Every {currentSubscription?.planDetails?.deliveryDay || "Saturday"}
+              Every{" "}
+              {currentSubscription?.planDetails?.deliveryDay || "Saturday"}
             </p>
             <p className="text-sm text-muted-foreground">
               Next delivery:{" "}
@@ -519,6 +510,7 @@ const DashboardSubscription = () => {
         </p>
         <Button
           variant="outline"
+          onClick={() => setShowCancelDialog(true)}
           className="text-destructive hover:text-destructive"
         >
           Cancel Subscription
@@ -530,11 +522,23 @@ const DashboardSubscription = () => {
         <PlanChangeDialog
           open={showConfirmDialog}
           onOpenChange={setShowConfirmDialog}
-          currentPlan={currentSubscription?.planDetails || { name: currentSubscription?.tier }}
+          currentPlan={
+            currentSubscription?.planDetails || {
+              name: currentSubscription?.tier,
+            }
+          }
           newPlan={selectedNewPlan}
           deliveryFrequency={currentSubscription?.billingCycle || "MONTHLY"}
           nextBillingDate={currentSubscription?.nextBillingDate}
           onConfirm={handleConfirmPlanChange}
+        />
+      )}
+
+      {showCancelDialog && (
+        <CancelSubscriptionModal
+          isOpen={showCancelDialog}
+          onClose={() => setShowCancelDialog(false)}
+          subscription={currentSubscription}
         />
       )}
     </div>

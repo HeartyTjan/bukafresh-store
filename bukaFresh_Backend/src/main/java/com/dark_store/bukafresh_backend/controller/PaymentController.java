@@ -1,5 +1,6 @@
 package com.dark_store.bukafresh_backend.controller;
 
+import com.dark_store.bukafresh_backend.dto.request.CreatePaymentMandateRequest;
 import com.dark_store.bukafresh_backend.dto.request.ProcessPaymentRequest;
 import com.dark_store.bukafresh_backend.dto.response.ApiResponse;
 import com.dark_store.bukafresh_backend.dto.response.PaymentResponse;
@@ -23,12 +24,15 @@ public class PaymentController {
 
     @PostMapping("/process")
     public ResponseEntity<ApiResponse<PaymentResponse>> processPayment(
-            @Valid @RequestBody ProcessPaymentRequest request) {
-        
-        log.info("Processing payment for subscription: {}", request.getSubscriptionId());
-        
-        PaymentResponse response = paymentService.processPayment(request);
-        
+            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @Valid @RequestBody CreatePaymentMandateRequest request) {
+
+        log.info("Processing payment for subscription: {} with idempotencyKey={}",
+                request.getSubscriptionId(), idempotencyKey);
+
+        PaymentResponse response =
+                paymentService.processPayment(request, idempotencyKey);
+
         return ResponseEntity.ok(ApiResponse.<PaymentResponse>builder()
                 .success(true)
                 .message("Payment processed successfully")

@@ -11,7 +11,11 @@ import { useSubscriptionCreationContext } from "../context/SubscriptionCreationC
 import { mockPackages } from "@/data/mockProducts";
 import { cn } from "@/shared/utils/cn";
 import { Button } from "@/shared/ui/buttons";
-import { showSuccessAlert, showInfoAlert } from "@/shared/customAlert";
+import {
+  showSuccessAlert,
+  showInfoAlert,
+  showErrorAlert,
+} from "@/shared/customAlert";
 
 const packageIcons = {
   single: ShoppingBasket,
@@ -29,12 +33,20 @@ export const SubscriptionPackageSelection = ({ onContinue }) => {
 
   const handleSelect = (pkg) => {
     selectPackage(pkg);
-    showSuccessAlert("Great choice! ✓", `${pkg.name} package selected - perfect for your needs`);
+    showSuccessAlert(
+      "Great choice! ✓",
+      `${pkg.name} package selected - perfect for your needs`,
+    );
   };
+
+  console.log("Selected package in UI:", selectedPackage);
 
   const handleContinue = () => {
     if (!selectedPackage) {
-      showErrorAlert("Package Required", "Please select a subscription package to continue");
+      showErrorAlert(
+        "Package Required",
+        "Please select a subscription package to continue",
+      );
       return;
     }
     onContinue?.();
@@ -66,7 +78,10 @@ export const SubscriptionPackageSelection = ({ onContinue }) => {
             <button
               onClick={() => {
                 setDeliveryFrequency("weekly");
-                showInfoAlert("Weekly delivery chosen", "You'll get fresh fruits and vegetables every week");
+                showInfoAlert(
+                  "Weekly delivery chosen",
+                  "You'll get fresh fruits and vegetables every week",
+                );
               }}
               className={cn(
                 "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all",
@@ -82,7 +97,10 @@ export const SubscriptionPackageSelection = ({ onContinue }) => {
             <button
               onClick={() => {
                 setDeliveryFrequency("monthly");
-                showInfoAlert("Monthly delivery chosen", "Great value option - perfect for pantry staples");
+                showInfoAlert(
+                  "Monthly delivery chosen",
+                  "Great value option - perfect for pantry staples",
+                );
               }}
               className={cn(
                 "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all",

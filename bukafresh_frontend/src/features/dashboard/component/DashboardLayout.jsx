@@ -43,7 +43,7 @@ const DashboardLayout = ({ children }) => {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/");
+    navigate("/login");
   };
 
   const isActive = (href) => {
