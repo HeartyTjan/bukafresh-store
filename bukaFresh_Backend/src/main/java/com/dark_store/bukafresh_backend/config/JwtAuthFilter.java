@@ -34,7 +34,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             System.out.println("No Authorization header or not Bearer token, proceeding without authentication");
-            filterChain.doFilter(request, response);
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            String json = """
+                
+                {
+                    "status": 401,
+                    "error": "Missing or invalid Authorization header",
+                    "timestamp": "%s"
+                }
+                """.formatted(Instant.now().toString());
+
+            response.getWriter().write(json);
             return;
         }
 
@@ -45,8 +55,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (!jwtUtil.validateToken(token)) {
             System.out.println("JWT token validation failed");
-            filterChain.doFilter(request, response);
-            return;
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            String json = """
+                
+                {
+                    "status": 401,
+                    "error": "Missing or invalid Authorization header",
+                    "timestamp": "%s"
+                }
+                """.formatted(Instant.now().toString());
+
+            response.getWriter().write(json);            return;
         }
         userId = jwtUtil.extractUsername(token);
         List<String> permissions = jwtUtil.extractPermissions(token);
